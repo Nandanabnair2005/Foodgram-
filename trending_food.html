@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foodgram – Trending Now</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF4500;
+    --amber: #FFB347;
+    --dark: #0A0A0A;
+    --surface: #141414;
+    --surface2: #1E1E1E;
+    --text: #F5F0E8;
+    --muted: #888;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--dark);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--text);
+  }
+  .logo span { color: var(--orange); }
+  nav .loc {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  nav .loc strong { color: var(--amber); }
+  /* HERO */
+  .hero {
+    padding: 40px 20px 20px;
+    text-align: center;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,69,0,0.15);
+    border: 1px solid rgba(255,69,0,0.3);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 13px;
+    color: var(--orange);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 6vw, 48px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .hero h1 em { font-style: italic; color: var(--amber); }
+  .hero p { color: var(--muted); font-size: 15px; }
+  /* FILTERS */
+  .filter-scroll {
+    display: flex;
+    gap: 10px;
+    padding: 20px 20px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 8px 18px;
+    border-radius: 100px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-chip.active, .filter-chip:hover {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: white;
+  }
+  /* SECTION */
+  .section {
+    padding: 30px 20px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .dot {
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  /* FOOD GRID */
+  .food-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  @media(min-width:600px){
+    .food-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  }
+  .food-card {
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.5s forwards;
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .food-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(255,69,0,0.15);
+    border-color: rgba(255,69,0,0.3);
+  }
+  .food-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s;
+  }
+  .food-card:hover img { transform: scale(1.05); }
+  .food-info {
+    padding: 14px;
+  }
+  .food-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .food-info .tag {
+    display: inline-block;
+    background: rgba(255,179,71,0.15);
+    color: var(--amber);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .food-info p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .food-info .trend {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--orange);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  /* FEATURED BANNER */
+  .featured {
+    margin: 0 20px 30px;
+    background: linear-gradient(135deg, #1a0800, #3d0e00);
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid rgba(255,69,0,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  .featured::before {
+    content: '';
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255,69,0,0.2) 0%, transparent 70%);
+  }
+  .featured .emoji { font-size: 40px; margin-bottom: 12px; display: block; }
+  .featured h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .featured p { color: rgba(245,240,232,0.6); font-size: 14px; position: relative; }
+  /* BOTTOM BUTTONS */
+  .bottom-actions {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,69,0,0.4); }
+  .btn-ghost {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Food<span>gram</span></div>
+  <div class="loc">📍 <strong>Your City</strong></div>
+</nav>
+
+<div class="hero">
+  <div class="badge">🔥 Updated daily</div>
+  <h1>What's <em>trending</em><br>in India</h1>
+  <p>Dishes going viral on social media right now</p>
+</div>
+
+<div class="filter-scroll" id="filterRow">
+  <button class="filter-chip active" onclick="filterFood('All',this)">All</button>
+  <button class="filter-chip" onclick="filterFood('Street Food',this)">Street Food</button>
+  <button class="filter-chip" onclick="filterFood('Desserts',this)">Desserts</button>
+  <button class="filter-chip" onclick="filterFood('World Cuisine',this)">World Cuisine</button>
+  <button class="filter-chip" onclick="filterFood('Beverages',this)">Beverages</button>
+  <button class="filter-chip" onclick="filterFood('Healthy',this)">Healthy</button>
+</div>
+
+<div class="featured">
+  <span class="emoji">🏆</span>
+  <h3>#1 This Week: Smash Burger</h3>
+  <p>The crispy, smashed patty trend has officially hit India — try it in 250+ cities near you.</p>
+</div>
+
+<div class="section">
+  <div class="section-title"><div class="dot"></div> Trending Right Now</div>
+  <div class="food-grid" id="foodGrid"></div>
+</div>
+
+<div class="bottom-actions">
+  <button class="btn-primary" onclick="window.location.href='options.html'">
+    🍽 Explore Restaurants →
+  </button>
+  <button class="btn-ghost" onclick="window.location.href='options.html'">
+    Skip for now
+  </button>
+</div>
+
+<script>
+const foods = [
+  { name:"Smash Burger", tag:"Street Food", desc:"Double-smashed crispy patty with masala mayo. Mumbai's new obsession.", trend:"↑ 340% this week", img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80", cat:"Street Food" },
+  { name:"Kunafa", tag:"Desserts", desc:"Gooey cheese dessert from Middle-Eastern kitchens, now trending in Kerala & Hyderabad.", trend:"↑ 280% this week", img:"https://images.unsplash.com/photo-1681830667773-ee4d4e21bde4?w=400&q=80", cat:"Desserts" },
+  { name:"Korean Buldak Ramen", tag:"World Cuisine", desc:"Fiery fire chicken noodles. India's spice lovers are hooked.", trend:"↑ 220% this week", img:"https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=400&q=80", cat:"World Cuisine" },
+  { name:"Maska Bun & Irani Chai", tag:"Street Food", desc:"Old Pune & Mumbai classic going viral again on reels.", trend:"↑ 190% this week", img:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80", cat:"Street Food" },
+  { name:"Milk Cake", tag:"Desserts", desc:"Crumbly, caramelised Indian mithai being reinvented in fusion dessert shops.", trend:"↑ 170% this week", img:"https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&q=80", cat:"Desserts" },
+  { name:"Birria Tacos", tag:"World Cuisine", desc:"Mexican-Indian fusion: marinated lamb with local spices in a crispy taco shell.", trend:"↑ 160% this week", img:"https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&q=80", cat:"World Cuisine" },
+  { name:"Coconut Cold Brew", tag:"Beverages", desc:"Kerala's coconut water blended into cold brew coffee. Refreshingly unique.", trend:"↑ 145% this week", img:"https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&q=80", cat:"Beverages" },
+  { name:"Acai Bowls", tag:"Healthy", desc:"Superfood bowls with mango, banana, and granola — popping up in cafes everywhere.", trend:"↑ 130% this week", img:"https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400&q=80", cat:"Healthy" },
+  { name:"Kathi Roll", tag:"Street Food", desc:"Kolkata's iconic egg & chicken roll is having its biggest moment yet.", trend:"↑ 120% this week", img:"https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400&q=80", cat:"Street Food" },
+  { name:"Matcha Desserts", tag:"Desserts", desc:"From matcha tiramisu to matcha ras malai — Japanese-Indian fusion is exploding.", trend:"↑ 115% this week", img:"https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&q=80", cat:"Desserts" },
+  { name:"Tteokbokki", tag:"World Cuisine", desc:"Korean spicy rice cakes, now sold by street vendors from Kochi to Kolkata.", trend:"↑ 110% this week", img:"https://images.unsplash.com/photo-1590301157284-3f6e9571b8e7?w=400&q=80", cat:"World Cuisine" },
+  { name:"Kashmiri Kehwa", tag:"Beverages", desc:"Saffron-spiced green tea trending as a wellness ritual in metros.", trend:"↑ 100% this week", img:"https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=400&q=80", cat:"Beverages" },
+];
+
+let activeFilter = 'All';
+
+function filterFood(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFoods();
+}
+
+function renderFoods() {
+  const grid = document.getElementById('foodGrid');
+  const filtered = activeFilter === 'All' ? foods : foods.filter(f => f.cat === activeFilter);
+  grid.innerHTML = filtered.map((f, i) => `
+    <div class="food-card" style="animation-delay:${i*0.07}s">
+      <img src="${f.img}" alt="${f.name}" loading="lazy" onerror="this.style.background='#1E1E1E'; this.style.height='160px'">
+      <div class="food-info">
+        <div class="tag">${f.tag}</div>
+        <h3>${f.name}</h3>
+        <p>${f.desc}</p>
+        <div class="trend">🔥 ${f.trend}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderFoods();
+</script>
+</body>
+</html>

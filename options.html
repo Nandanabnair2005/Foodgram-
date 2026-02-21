@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foodgram – How to Explore</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF4500;
+    --amber: #FFB347;
+    --dark: #0A0A0A;
+    --surface: #141414;
+    --surface2: #1E1E1E;
+    --text: #F5F0E8;
+    --muted: #888;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: var(--dark);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; }
+  .logo span { color: var(--orange); }
+  .back-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+  .heading {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .heading h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 6vw, 44px);
+    font-weight: 900;
+    margin-bottom: 12px;
+  }
+  .heading h1 em { font-style: italic; color: var(--orange); }
+  .heading p { color: var(--muted); font-size: 15px; }
+  .options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 520px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  @media(min-width: 540px) {
+    .options { grid-template-columns: 1fr 1fr; }
+  }
+  .option-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 24px;
+    cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .option-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .option-card.reels::before {
+    background: radial-gradient(circle at 50% 0%, rgba(255,69,0,0.15) 0%, transparent 70%);
+  }
+  .option-card.pref::before {
+    background: radial-gradient(circle at 50% 0%, rgba(255,179,71,0.15) 0%, transparent 70%);
+  }
+  .option-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+  }
+  .option-card.reels:hover { border-color: rgba(255,69,0,0.5); }
+  .option-card.pref:hover { border-color: rgba(255,179,71,0.5); }
+  .option-card:hover::before { opacity: 1; }
+  .option-card .icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .option-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .option-card.reels h3 { color: var(--orange); }
+  .option-card.pref h3 { color: var(--amber); }
+  .option-card p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+    position: relative;
+  }
+  .option-card .cta {
+    margin-top: 20px;
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    position: relative;
+    transition: transform 0.2s;
+  }
+  .option-card:hover .cta { transform: translateX(4px); }
+  .option-card.reels .cta { background: rgba(255,69,0,0.15); color: var(--orange); }
+  .option-card.pref .cta { background: rgba(255,179,71,0.15); color: var(--amber); }
+  /* Features list */
+  .features {
+    margin-top: 50px;
+    padding: 0 20px;
+    text-align: center;
+  }
+  .features p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .feat-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .feat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .feat span { font-size: 16px; }
+  /* Animate in */
+  .option-card {
+    opacity: 0;
+    animation: slideUp 0.5s forwards;
+  }
+  .option-card:nth-child(2) { animation-delay: 0.1s; }
+  @keyframes slideUp {
+    from { opacity:0; transform: translateY(30px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Food<span>gram</span></div>
+  <button class="back-btn" onclick="history.back()">← Back</button>
+</nav>
+
+<main>
+  <div class="heading">
+    <h1>How would you like<br>to <em>explore</em>?</h1>
+    <p>Pick a discovery mode to find your next meal</p>
+  </div>
+
+  <div class="options">
+    <div class="option-card reels" onclick="window.location.href='reels.html'">
+      <span class="icon">🎥</span>
+      <h3>Reels Mode</h3>
+      <p>Swipe through viral food videos and instantly find where to eat that dish.</p>
+      <div class="cta">Start Swiping →</div>
+    </div>
+
+    <div class="option-card pref" onclick="window.location.href='preference.html'">
+      <span class="icon">🍽</span>
+      <h3>Preference Mode</h3>
+      <p>Tell us what you're craving and your budget — we'll find your perfect match.</p>
+      <div class="cta">Set Preferences →</div>
+    </div>
+  </div>
+
+  <div class="features">
+    <p>Every option lets you</p>
+    <div class="feat-row">
+      <div class="feat"><span>🪑</span> Pre-book a table</div>
+      <div class="feat"><span>📦</span> Order takeaway</div>
+      <div class="feat"><span>🗺</span> Get directions</div>
+      <div class="feat"><span>⭐</span> Read reviews</div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

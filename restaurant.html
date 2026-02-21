@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foodgram – Restaurants</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF4500;
+    --amber: #FFB347;
+    --dark: #0A0A0A;
+    --surface: #141414;
+    --surface2: #1E1E1E;
+    --text: #F5F0E8;
+    --muted: #888;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--dark); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+  nav {
+    position:sticky; top:0; z-index:100;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 20px;
+    background:rgba(10,10,10,0.95);
+    backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+    gap:12px;
+  }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; flex-shrink:0; }
+  .logo span { color:var(--orange); }
+  .search-bar {
+    flex:1; display:flex; align-items:center; gap:8px;
+    background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:100px; padding:8px 16px;
+    max-width:360px; transition:border-color 0.2s;
+  }
+  .search-bar:focus-within { border-color:rgba(255,69,0,0.5); }
+  .search-bar input {
+    flex:1; background:transparent; border:none; outline:none;
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px;
+  }
+  .search-bar input::placeholder { color:var(--muted); }
+  /* Sort & Filter bar */
+  .sort-bar {
+    display:flex; align-items:center; gap:10px;
+    padding:14px 20px; overflow-x:auto;
+    scrollbar-width:none; border-bottom:1px solid var(--border);
+  }
+  .sort-bar::-webkit-scrollbar { display:none; }
+  .sort-chip {
+    flex-shrink:0; padding:7px 16px;
+    border-radius:100px; border:1.5px solid var(--border);
+    background:transparent; color:var(--muted);
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500;
+    cursor:pointer; transition:all 0.2s;
+    white-space:nowrap;
+  }
+  .sort-chip.active, .sort-chip:hover {
+    background:var(--orange); border-color:var(--orange); color:white;
+  }
+  /* City tabs */
+  .city-tabs {
+    display:flex; gap:6px; padding:14px 20px;
+    overflow-x:auto; scrollbar-width:none;
+  }
+  .city-tabs::-webkit-scrollbar { display:none; }
+  .city-tab {
+    flex-shrink:0; padding:6px 14px;
+    border-radius:100px; border:1.5px solid var(--border);
+    background:transparent; color:var(--muted);
+    font-size:13px; cursor:pointer; transition:all 0.2s;
+  }
+  .city-tab.active { background:var(--amber); border-color:var(--amber); color:#111; font-weight:600; }
+  /* Results info */
+  .results-info {
+    padding:12px 20px; color:var(--muted); font-size:13px;
+    border-bottom:1px solid var(--border);
+  }
+  .results-info strong { color:var(--text); }
+  /* Restaurant Grid */
+  .restaurant-grid {
+    display:grid;
+    grid-template-columns:1fr;
+    gap:0;
+  }
+  @media(min-width:640px) {
+    .restaurant-grid { grid-template-columns:repeat(2, 1fr); }
+  }
+  @media(min-width:1024px) {
+    .restaurant-grid { grid-template-columns:repeat(3, 1fr); }
+  }
+  .r-card {
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    border-right:1px solid var(--border);
+    overflow:hidden;
+    transition:background 0.2s;
+    opacity:0;
+    animation:fadeIn 0.4s forwards;
+  }
+  @keyframes fadeIn { to { opacity:1; } }
+  .r-card:hover { background:var(--surface2); }
+  .r-img-wrap { position:relative; overflow:hidden; height:200px; }
+  .r-img-wrap img {
+    width:100%; height:100%; object-fit:cover;
+    transition:transform 0.4s;
+    display:block;
+  }
+  .r-card:hover .r-img-wrap img { transform:scale(1.06); }
+  .r-badge {
+    position:absolute; top:12px; left:12px;
+    background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:100px; padding:4px 12px;
+    font-size:11px; font-weight:600; color:white;
+  }
+  .r-badge.top { background:rgba(255,69,0,0.85); }
+  .r-status-dot {
+    position:absolute; top:12px; right:12px;
+    width:10px; height:10px; border-radius:50%;
+    box-shadow:0 0 0 3px rgba(0,0,0,0.5);
+  }
+  .r-status-dot.open { background:#22c55e; }
+  .r-status-dot.closed { background:#ef4444; }
+  .r-body { padding:16px; }
+  .r-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+  .r-body h3 { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; line-height:1.2; }
+  .r-rating {
+    display:flex; align-items:center; gap:4px;
+    background:rgba(255,179,71,0.15); color:var(--amber);
+    border-radius:6px; padding:3px 8px; font-size:13px; font-weight:600;
+    flex-shrink:0; margin-left:8px;
+  }
+  .r-sub { color:var(--muted); font-size:12px; margin-bottom:10px; }
+  .r-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px; }
+  .r-tag {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:100px; padding:2px 9px; font-size:11px; color:var(--muted);
+  }
+  .r-price-row {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .r-price { font-size:13px; color:var(--muted); }
+  .r-price strong { color:var(--text); font-size:15px; }
+  .r-reviews { font-size:12px; color:var(--muted); }
+  /* Booking panel (hidden by default) */
+  .booking-panel {
+    display:none; padding:14px; background:rgba(255,69,0,0.05);
+    border-top:1px solid rgba(255,69,0,0.15);
+  }
+  .booking-panel.open { display:block; }
+  .booking-panel h4 { font-size:13px; font-weight:600; margin-bottom:10px; color:var(--orange); }
+  .opt-row { display:flex; gap:6px; margin-bottom:10px; }
+  .opt-btn {
+    flex:1; padding:8px 6px;
+    border-radius:8px; border:1.5px solid var(--border);
+    background:transparent; color:var(--muted);
+    font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .opt-btn.active { border-color:var(--orange); background:rgba(255,69,0,0.1); color:var(--orange); }
+  .dt-row { display:flex; gap:8px; margin-bottom:10px; }
+  .dt-row input {
+    flex:1; padding:9px 10px;
+    background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:8px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:12px; color-scheme:dark;
+  }
+  .dt-row input:focus { outline:none; border-color:var(--orange); }
+  .btn-confirm {
+    width:100%; padding:10px;
+    background:var(--orange); color:white; border:none;
+    border-radius:8px; font-family:'DM Sans',sans-serif;
+    font-size:13px; font-weight:600; cursor:pointer;
+    transition:transform 0.15s;
+  }
+  .btn-confirm:hover { transform:scale(1.01); }
+  .card-actions {
+    display:flex; gap:8px; padding:0 16px 16px;
+  }
+  .action-btn {
+    flex:1; padding:10px;
+    border-radius:10px; border:none;
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .action-btn:hover { transform:scale(1.02); }
+  .action-btn.primary { background:var(--orange); color:white; }
+  .action-btn.secondary { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+  /* Toast */
+  .toast {
+    position:fixed; bottom:20px; left:50%;
+    transform:translateX(-50%) translateY(100px);
+    background:#22c55e; color:white;
+    padding:12px 24px; border-radius:100px;
+    font-weight:600; font-size:14px;
+    transition:transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index:500; white-space:nowrap;
+  }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  /* No results */
+  .no-res {
+    text-align:center; padding:60px 20px;
+    color:var(--muted); font-size:15px; grid-column:1/-1;
+  }
+  .no-res .emoji { font-size:48px; display:block; margin-bottom:12px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Food<span>gram</span></div>
+  <div class="search-bar">
+    <span>🔍</span>
+    <input type="text" id="searchInput" placeholder="Search restaurants..." oninput="renderCards()">
+  </div>
+</nav>
+
+<div class="sort-bar">
+  <button class="sort-chip active" onclick="setSort('rating',this)">⭐ Top Rated</button>
+  <button class="sort-chip" onclick="setSort('reviews',this)">💬 Most Reviewed</button>
+  <button class="sort-chip" onclick="setSort('price_asc',this)">💰 Budget First</button>
+  <button class="sort-chip" onclick="setSort('price_desc',this)">💎 Premium</button>
+  <button class="sort-chip" onclick="setSort('open',this)">🟢 Open Now</button>
+</div>
+
+<div class="city-tabs" id="cityTabs">
+  <button class="city-tab active" onclick="setCity('All',this)">🇮🇳 All Cities</button>
+  <button class="city-tab" onclick="setCity('Mumbai',this)">Mumbai</button>
+  <button class="city-tab" onclick="setCity('Delhi',this)">Delhi</button>
+  <button class="city-tab" onclick="setCity('Bangalore',this)">Bangalore</button>
+  <button class="city-tab" onclick="setCity('Hyderabad',this)">Hyderabad</button>
+  <button class="city-tab" onclick="setCity('Kochi',this)">Kochi</button>
+  <button class="city-tab" onclick="setCity('Kolkata',this)">Kolkata</button>
+  <button class="city-tab" onclick="setCity('Chennai',this)">Chennai</button>
+  <button class="city-tab" onclick="setCity('Pune',this)">Pune</button>
+  <button class="city-tab" onclick="setCity('Ahmedabad',this)">Ahmedabad</button>
+</div>
+
+<div class="results-info" id="resultsInfo"></div>
+
+<div class="restaurant-grid" id="restaurantGrid"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const restaurants = [
+  { id:1, name:"Shah Ghouse Café", city:"Hyderabad", cuisine:"Mughlai", rating:4.9, reviews:8340, price:350, open:true, tags:["Biryani","Haleem","Iconic","Non-Veg"], badge:"#1 in Hyd", img:"https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80", address:"Tolichowki, Hyderabad" },
+  { id:2, name:"MTR – 1924", city:"Bangalore", cuisine:"South Indian", rating:4.8, reviews:9100, price:180, open:true, tags:["Breakfast","Idli","Heritage","Veg"], badge:"Since 1924", img:"https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=600&q=80", address:"Lalbagh Road, Bangalore" },
+  { id:3, name:"Bombay Canteen", city:"Mumbai", cuisine:"Modern Indian", rating:4.7, reviews:5200, price:1400, open:true, tags:["Cocktails","Creative","Trendy","Brunch"], badge:"Editor's Pick", img:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80", address:"Lower Parel, Mumbai" },
+  { id:4, name:"Karim's", city:"Delhi", cuisine:"Mughlai", rating:4.7, reviews:12900, price:400, open:true, tags:["Kebabs","Historic","Non-Veg","Mutton"], badge:"Since 1913", img:"https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=600&q=80", address:"Jama Masjid, Delhi" },
+  { id:5, name:"Peter Cat", city:"Kolkata", cuisine:"Continental", rating:4.8, reviews:6700, price:950, open:true, tags:["Chelo Kebab","Date Night","Fine Dine","Iconic"], badge:"Must Visit", img:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80", address:"Park Street, Kolkata" },
+  { id:6, name:"Seoul Bites", city:"Bangalore", cuisine:"Korean", rating:4.8, reviews:1480, price:650, open:true, tags:["Ramen","KBBQ","Tteokbokki","Spicy"], badge:"🔥 Trending", img:"https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80", address:"Koramangala, Bangalore" },
+  { id:7, name:"Arabian Sweets", city:"Kochi", cuisine:"Middle Eastern", rating:4.7, reviews:2100, price:220, open:true, tags:["Kunafa","Baklava","Desserts","Must Try"], badge:"Viral 🍯", img:"https://images.unsplash.com/photo-1681830667773-ee4d4e21bde4?w=600&q=80", address:"MG Road, Kochi" },
+  { id:8, name:"Toit Brewpub", city:"Bangalore", cuisine:"European", rating:4.6, reviews:4100, price:900, open:false, tags:["Craft Beer","Pizza","Gastropub","Rooftop"], badge:"Best Bar", img:"https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80", address:"Indiranagar, Bangalore" },
+  { id:9, name:"Khyber Restaurant", city:"Mumbai", cuisine:"Frontier Cuisine", rating:4.7, reviews:3800, price:2000, open:true, tags:["Luxury","Heritage","Non-Veg","Fine Dine"], badge:"⭐ Premium", img:"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80", address:"Fort, Mumbai" },
+  { id:10, name:"Saravana Bhavan", city:"Chennai", cuisine:"South Indian", rating:4.6, reviews:7500, price:160, open:true, tags:["Veg","Thali","Filter Coffee","Budget"], badge:"Pure Veg", img:"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80", address:"Anna Nagar, Chennai" },
+  { id:11, name:"Burma Burma", city:"Mumbai", cuisine:"Burmese", rating:4.5, reviews:2300, price:750, open:true, tags:["Vegan-Friendly","Unique","Burmese","Healthy"], badge:"Unique Cuisine", img:"https://images.unsplash.com/photo-1555126634-323283e090fa?w=600&q=80", address:"Fort, Mumbai" },
+  { id:12, name:"Nizam's Kathi Roll", city:"Kolkata", cuisine:"Street Food", rating:4.5, reviews:9200, price:130, open:true, tags:["Budget","Quick Bite","Street Food","Iconic"], badge:"Street Legend", img:"https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&q=80", address:"Park Street, Kolkata" },
+  { id:13, name:"Café Madras", city:"Mumbai", cuisine:"South Indian", rating:4.6, reviews:5400, price:120, open:true, tags:["Heritage","Filter Coffee","Old Mumbai","Idli"], badge:"Since 1940", img:"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80", address:"Matunga, Mumbai" },
+  { id:14, name:"The Toddy Shop", city:"Kochi", cuisine:"Kerala Seafood", rating:4.8, reviews:4100, price:600, open:true, tags:["Seafood","Fish Curry","Coconut","Kerala"], badge:"Seafood Heaven", img:"https://images.unsplash.com/photo-1585325701956-60dd9c8553bc?w=600&q=80", address:"Fort Kochi, Kochi" },
+  { id:15, name:"Punjab Grill", city:"Delhi", cuisine:"North Indian", rating:4.4, reviews:2800, price:1200, open:true, tags:["Dal Makhani","Tandoor","Fine Dine","Punjab"], badge:"Top Punjabi", img:"https://images.unsplash.com/photo-1548943487-a2e4e43b4853?w=600&q=80", address:"Connaught Place, Delhi" },
+  { id:16, name:"Zen Restaurant", city:"Delhi", cuisine:"Japanese", rating:4.5, reviews:890, price:1600, open:true, tags:["Sushi","Ramen","Fine Dine","Authentic"], badge:"Best Japanese", img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80", address:"Mehrauli, Delhi" },
+  { id:17, name:"Dakshin", city:"Chennai", cuisine:"South Indian", rating:4.7, reviews:3200, price:1100, open:true, tags:["Fine Dine","Regional Cuisines","Luxury","Award-Winning"], badge:"⭐ Fine Dine", img:"https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=600&q=80", address:"ITC Grand Chola, Chennai" },
+  { id:18, name:"Burger Brotherhood", city:"Mumbai", cuisine:"American", rating:4.6, reviews:1800, price:420, open:true, tags:["Smash Burger","Trending","Craft","Non-Veg"], badge:"🔥 Viral", img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80", address:"Bandra, Mumbai" },
+  { id:19, name:"Irani Café Kayani", city:"Pune", cuisine:"Iranian/Continental", rating:4.7, reviews:4600, price:180, open:false, tags:["Bun Maska","Irani Chai","Heritage","Breakfast"], badge:"Since 1950", img:"https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&q=80", address:"East Street, Pune" },
+  { id:20, name:"Haji Ali Juice Centre", city:"Mumbai", cuisine:"Beverages/Snacks", rating:4.6, reviews:7800, price:80, open:true, tags:["Juices","Milkshakes","Iconic","Budget"], badge:"Mumbai Icon", img:"https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=600&q=80", address:"Haji Ali, Mumbai" },
+  { id:21, name:"Koshy's", city:"Bangalore", cuisine:"Continental/Breakfast", rating:4.5, reviews:3400, price:300, open:true, tags:["Breakfast","Heritage","Coffee","British-Era"], badge:"Since 1940", img:"https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=600&q=80", address:"St. Marks Road, Bangalore" },
+  { id:22, name:"Copper Chimney", city:"Mumbai", cuisine:"North Indian", rating:4.4, reviews:5100, price:900, open:true, tags:["Tandoor","Curry","Reliable","Family"], badge:"Classic Choice", img:"https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80", address:"Worli, Mumbai" },
+  { id:23, name:"Babu Shahi Bawarchi", city:"Hyderabad", cuisine:"Mughlai", rating:4.6, reviews:3200, price:300, open:true, tags:["Biryani","Paya","Non-Veg","Budget"], badge:"Hidden Gem", img:"https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80", address:"Mehdipatnam, Hyderabad" },
+  { id:24, name:"Indian Accent", city:"Delhi", cuisine:"Modern Indian", rating:4.9, reviews:2100, price:3500, open:true, tags:["World's Best","Creative","Tasting Menu","Luxury"], badge:"🏆 Award Winner", img:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80", address:"The Lodhi, Delhi" },
+];
+
+let currentSort = 'rating';
+let currentCity = 'All';
+let openBookingId = null;
+
+function setSort(sort, btn) {
+  currentSort = sort;
+  document.querySelectorAll('.sort-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function setCity(city, btn) {
+  currentCity = city;
+  document.querySelectorAll('.city-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function renderCards() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  let data = [...restaurants];
+
+  if (currentCity !== 'All') data = data.filter(r => r.city === currentCity);
+  if (query) data = data.filter(r => r.name.toLowerCase().includes(query) || r.cuisine.toLowerCase().includes(query) || r.tags.some(t => t.toLowerCase().includes(query)));
+  if (currentSort === 'open') data = data.filter(r => r.open);
+
+  data.sort((a,b) => {
+    if (currentSort === 'rating') return b.rating - a.rating;
+    if (currentSort === 'reviews') return b.reviews - a.reviews;
+    if (currentSort === 'price_asc') return a.price - b.price;
+    if (currentSort === 'price_desc') return b.price - a.price;
+    return 0;
+  });
+
+  document.getElementById('resultsInfo').innerHTML = `Showing <strong>${data.length}</strong> restaurants${currentCity !== 'All' ? ' in ' + currentCity : ' across India'}`;
+
+  const grid = document.getElementById('restaurantGrid');
+  if (data.length === 0) {
+    grid.innerHTML = `<div class="no-res"><span class="emoji">🍽</span>No restaurants found. Try different filters.</div>`;
+    return;
+  }
+
+  grid.innerHTML = data.map((r, i) => `
+    <div class="r-card" style="animation-delay:${i*0.04}s" id="card${r.id}">
+      <div class="r-img-wrap">
+        <img src="${r.img}" alt="${r.name}" loading="lazy" onerror="this.parentElement.style.background='#1E1E1E'">
+        <div class="r-badge ${r.badge.includes('#1') || r.badge.includes('🏆') || r.badge.includes('⭐') ? 'top' : ''}">${r.badge}</div>
+        <div class="r-status-dot ${r.open ? 'open' : 'closed'}" title="${r.open ? 'Open Now' : 'Closed'}"></div>
+      </div>
+      <div class="r-body">
+        <div class="r-top">
+          <h3>${r.name}</h3>
+          <div class="r-rating">⭐ ${r.rating}</div>
+        </div>
+        <div class="r-sub">📍 ${r.address} · ${r.cuisine}</div>
+        <div class="r-tags">${r.tags.map(t => `<span class="r-tag">${t}</span>`).join('')}</div>
+        <div class="r-price-row">
+          <div class="r-price">Avg <strong>₹${r.price}</strong>/person</div>
+          <div class="r-reviews">${r.reviews.toLocaleString()} reviews</div>
+        </div>
+      </div>
+      <div class="booking-panel" id="booking${r.id}">
+        <h4>🪑 Reserve a Table</h4>
+        <div class="opt-row">
+          <button class="opt-btn active" onclick="pickOpt(this,${r.id})">Dine In</button>
+          <button class="opt-btn" onclick="pickOpt(this,${r.id})">Takeaway</button>
+          <button class="opt-btn" onclick="pickOpt(this,${r.id})">Delivery</button>
+        </div>
+        <div class="dt-row">
+          <input type="date" id="d${r.id}" min="${new Date().toISOString().split('T')[0]}">
+          <input type="time" id="t${r.id}">
+        </div>
+        <button class="btn-confirm" onclick="confirmBook(${r.id},'${r.name}')">Confirm Booking</button>
+      </div>
+      <div class="card-actions">
+        <button class="action-btn primary" onclick="toggleBook(${r.id})">🪑 Book Table</button>
+        <button class="action-btn secondary" onclick="openMaps('${r.name}','${r.city}')">🗺 Maps</button>
+      </div>
+    </div>
+  `).join('');
+
+  // Set default date
+  data.forEach(r => {
+    const dateInput = document.getElementById('d' + r.id);
+    if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+  });
+}
+
+function toggleBook(id) {
+  const panel = document.getElementById('booking' + id);
+  const isOpen = panel.classList.contains('open');
+  // Close all panels
+  document.querySelectorAll('.booking-panel').forEach(p => p.classList.remove('open'));
+  if (!isOpen) panel.classList.add('open');
+}
+
+function pickOpt(btn, id) {
+  const panel = document.getElementById('booking' + id);
+  panel.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function confirmBook(id, name) {
+  const date = document.getElementById('d' + id).value;
+  const time = document.getElementById('t' + id).value;
+  const opt = document.querySelector(`#booking${id} .opt-btn.active`)?.textContent || 'Dine In';
+
+  if (!date) { alert('Please select a date'); return; }
+  if (opt.trim() === 'Dine In' && !time) { alert('Please select a time for Dine In'); return; }
+
+  document.getElementById('booking' + id).classList.remove('open');
+
+  const toast = document.getElementById('toast');
+  toast.textContent = `✅ ${opt.trim()} confirmed at ${name}!`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function openMaps(name, city) {
+  window.open(`https://www.google.com/maps/search/${encodeURIComponent(name + ' ' + city)}`, '_blank');
+}
+
+renderCards();
+</script>
+</body>
+</html>

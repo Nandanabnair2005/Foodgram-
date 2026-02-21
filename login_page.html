@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foodgram – Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF4500;
+    --amber: #FFB347;
+    --dark: #0A0A0A;
+    --surface: #141414;
+    --surface2: #1E1E1E;
+    --text: #F5F0E8;
+    --muted: #888;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: var(--dark);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    display: flex;
+    overflow-x: hidden;
+  }
+  /* Left panel */
+  .left-panel {
+    display: none;
+    width: 50%;
+    background: linear-gradient(160deg, #1a0800 0%, #3d0e00 50%, #1a0800 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 60px;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  @media(min-width:768px){ .left-panel { display:flex; } }
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(255,69,0,0.25) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(255,179,71,0.15) 0%, transparent 50%);
+  }
+  .brand-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--text);
+    position: relative;
+    z-index: 1;
+  }
+  .brand-logo span { color: var(--orange); }
+  .hero-text {
+    position: relative;
+    z-index: 1;
+  }
+  .hero-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .hero-text h1 em { font-style: italic; color: var(--orange); }
+  .hero-text p { color: rgba(245,240,232,0.6); font-size: 16px; line-height: 1.7; }
+  .food-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .pill {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--text);
+    backdrop-filter: blur(10px);
+  }
+  /* Right panel */
+  .right-panel {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 24px;
+  }
+  .login-box {
+    width: 100%;
+    max-width: 420px;
+  }
+  .mobile-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 40px;
+    display: block;
+    text-align: center;
+  }
+  .mobile-logo span { color: var(--orange); }
+  @media(min-width:768px){ .mobile-logo { display:none; } }
+  .login-box h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .login-box p.subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 36px;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-group input::placeholder { color: #555; }
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(255,69,0,0.15);
+  }
+  .form-group input.error-field { border-color: #ff4d4d; }
+  .error-msg {
+    color: #ff6b6b;
+    font-size: 12px;
+    margin-top: 6px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+  .phone-wrap {
+    display: flex;
+    gap: 10px;
+  }
+  .phone-code {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    width: 80px;
+    text-align: center;
+  }
+  .phone-wrap input { flex: 1; }
+  .btn-login {
+    width: 100%;
+    padding: 15px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-login::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    border-radius: inherit;
+  }
+  .btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,69,0,0.4);
+    background: #ff5500;
+  }
+  .btn-login:active { transform: translateY(0); }
+  .divider {
+    text-align: center;
+    margin: 24px 0;
+    position: relative;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .divider::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 50%;
+    height: 1px;
+    background: var(--border);
+  }
+  .divider span {
+    background: var(--dark);
+    padding: 0 12px;
+    position: relative;
+  }
+  .btn-google {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-google:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.04); }
+  .btn-google svg { width:20px; height:20px; }
+  .success-toast {
+    position: fixed;
+    top: 20px; left:50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: #22c55e;
+    color: white;
+    padding: 14px 24px;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .success-toast.show { transform: translateX(-50%) translateY(0); }
+  .terms {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .terms a { color: var(--amber); text-decoration: none; }
+  /* Floating food emojis */
+  .float-emoji {
+    position: fixed;
+    font-size: 28px;
+    opacity: 0.06;
+    pointer-events: none;
+    animation: floatUp 12s linear infinite;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.06; }
+    90% { opacity: 0.06; }
+    100% { transform: translateY(-200px) rotate(360deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="float-emoji" style="left:5%; animation-delay:0s;">🍛</div>
+<div class="float-emoji" style="left:15%; animation-delay:2s;">🥘</div>
+<div class="float-emoji" style="left:80%; animation-delay:4s;">🍜</div>
+<div class="float-emoji" style="left:90%; animation-delay:6s;">🧆</div>
+<div class="float-emoji" style="left:50%; animation-delay:8s;">🫓</div>
+
+<div class="success-toast" id="toast">✓ Welcome to Foodgram!</div>
+
+<!-- Left Panel -->
+<div class="left-panel">
+  <div class="brand-logo">Food<span>gram</span></div>
+  <div class="hero-text">
+    <h1>India's <em>tastiest</em> food community</h1>
+    <p>Discover trending dishes, find top-rated restaurants, and order your next obsession — all in one place.</p>
+  </div>
+  <div class="food-pills">
+    <div class="pill">🍛 Biryani</div>
+    <div class="pill">🥘 Chettinad</div>
+    <div class="pill">🍜 Ramen</div>
+    <div class="pill">🫓 Kunafa</div>
+    <div class="pill">🧆 Shakshuka</div>
+    <div class="pill">🍰 Rasmalai</div>
+    <div class="pill">🌮 Kathi Roll</div>
+  </div>
+</div>
+
+<!-- Right Panel -->
+<div class="right-panel">
+  <div class="login-box">
+    <div class="mobile-logo">Food<span>gram</span></div>
+    <h2>Sign in 👋</h2>
+    <p class="subtitle">Your next food obsession is waiting.</p>
+
+    <form id="loginForm" novalidate>
+
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="name" placeholder="Aarav Sharma" autocomplete="name">
+        <div class="error-msg" id="nameError">Please enter your name</div>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="aarav@example.com" autocomplete="email">
+        <div class="error-msg" id="emailError">Enter a valid email address</div>
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <div class="phone-wrap">
+          <div class="phone-code">🇮🇳 +91</div>
+          <input type="tel" id="phone" placeholder="9876543210" maxlength="10" autocomplete="tel">
+        </div>
+        <div class="error-msg" id="phoneError">Enter a valid 10-digit mobile number</div>
+      </div>
+
+      <button type="submit" class="btn-login">Continue →</button>
+    </form>
+
+    <div class="divider"><span>or</span></div>
+
+    <button class="btn-google" onclick="googleLogin()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.5 1.2 8.9 3.2l6.6-6.6C35.4 2.5 30 0 24 0 14.6 0 6.5 5.5 2.5 13.5l7.7 6C12 13.8 17.5 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.7-.2-3.3-.5-4.8H24v9.1h12.7c-.6 3-2.4 5.6-5 7.3l7.7 6c4.5-4.2 7.1-10.3 7.1-17.6z"/><path fill="#FBBC05" d="M10.2 28.5C9.7 27.1 9.5 25.6 9.5 24s.3-3.1.7-4.5l-7.7-6C.9 16.7 0 20.2 0 24s.9 7.3 2.5 10.5l7.7-6z"/><path fill="#34A853" d="M24 48c6 0 11-2 14.7-5.3l-7.7-6c-2 1.3-4.5 2.1-7 2.1-6.5 0-12-4.3-14-10l-7.7 6C6.5 42.5 14.6 48 24 48z"/></svg>
+      Continue with Google
+    </button>
+
+    <p class="terms">By signing in, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
+  </div>
+</div>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    let valid = true;
+
+    const name = document.getElementById('name');
+    const email = document.getElementById('email');
+    const phone = document.getElementById('phone');
+
+    // Reset
+    [name, email, phone].forEach(el => {
+      el.classList.remove('error-field');
+    });
+    document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+
+    if (!name.value.trim() || name.value.trim().length < 2) {
+      name.classList.add('error-field');
+      document.getElementById('nameError').classList.add('show');
+      valid = false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email.value.trim())) {
+      email.classList.add('error-field');
+      document.getElementById('emailError').classList.add('show');
+      valid = false;
+    }
+
+    if (!/^[6-9][0-9]{9}$/.test(phone.value.trim())) {
+      phone.classList.add('error-field');
+      document.getElementById('phoneError').classList.add('show');
+      document.getElementById('phoneError').textContent = 'Enter a valid Indian mobile number (starts with 6-9)';
+      valid = false;
+    }
+
+    if (valid) {
+      const btn = document.querySelector('.btn-login');
+      btn.textContent = 'Loading...';
+      btn.disabled = true;
+      setTimeout(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => { window.location.href = 'trending_food.html'; }, 1200);
+      }, 800);
+    }
+  });
+
+  function googleLogin() {
+    const btn = document.querySelector('.btn-google');
+    btn.textContent = '⏳ Signing in...';
+    setTimeout(() => { window.location.href = 'trending_food.html'; }, 1000);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foodgram – Preferences</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF4500;
+    --amber: #FFB347;
+    --dark: #0A0A0A;
+    --surface: #141414;
+    --surface2: #1E1E1E;
+    --text: #F5F0E8;
+    --muted: #888;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--dark); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+  nav {
+    position:sticky; top:0; z-index:50;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 20px;
+    background:rgba(10,10,10,0.92);
+    backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+  }
+  .logo { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; }
+  .logo span { color:var(--orange); }
+  .back-btn {
+    background:transparent; border:1px solid var(--border);
+    color:var(--muted); padding:8px 16px; border-radius:100px;
+    font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer;
+    transition:all 0.2s;
+  }
+  .back-btn:hover { border-color:rgba(255,255,255,0.3); color:var(--text); }
+  .pref-wrap { max-width:640px; margin:0 auto; padding:32px 20px 100px; }
+  .pref-wrap h1 { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; margin-bottom:8px; }
+  .pref-wrap > p { color:var(--muted); font-size:15px; margin-bottom:32px; }
+  .pref-section { margin-bottom:32px; }
+  .pref-section label {
+    display:block; font-size:12px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--muted); margin-bottom:14px;
+  }
+  .chip-row { display:flex; flex-wrap:wrap; gap:10px; }
+  .chip {
+    padding:9px 18px; border-radius:100px;
+    border:1.5px solid var(--border);
+    background:transparent; color:var(--muted);
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .chip:hover { border-color:rgba(255,255,255,0.3); color:var(--text); }
+  .chip.active { background:var(--orange); border-color:var(--orange); color:white; }
+  .chip.active.amber { background:var(--amber); border-color:var(--amber); color:#111; }
+  /* Range slider */
+  .range-wrap { padding:0 4px; }
+  .range-labels { display:flex; justify-content:space-between; margin-bottom:12px; font-size:13px; color:var(--muted); }
+  .budget-display {
+    text-align:center; margin-bottom:16px;
+    font-family:'Playfair Display',serif; font-size:24px; font-weight:700;
+  }
+  input[type=range] {
+    width:100%; -webkit-appearance:none; appearance:none;
+    height:4px; border-radius:2px;
+    background:linear-gradient(to right, var(--orange) 0%, var(--orange) var(--fill, 30%), var(--surface2) var(--fill, 30%));
+    outline:none; cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; appearance:none;
+    width:22px; height:22px; border-radius:50%;
+    background:var(--orange); box-shadow:0 0 0 3px rgba(255,69,0,0.25);
+    cursor:pointer;
+  }
+  /* City selector */
+  .city-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:10px; }
+  .city-card {
+    background:var(--surface); border:1.5px solid var(--border);
+    border-radius:12px; padding:12px; text-align:center;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .city-card:hover { border-color:rgba(255,255,255,0.25); }
+  .city-card.active { border-color:var(--orange); background:rgba(255,69,0,0.08); }
+  .city-card .city-emoji { font-size:24px; display:block; margin-bottom:4px; }
+  .city-card .city-name { font-size:13px; font-weight:500; }
+  /* Sticky CTA */
+  .sticky-cta {
+    position:fixed; bottom:0; left:0; right:0;
+    padding:16px 20px;
+    background:rgba(10,10,10,0.95);
+    backdrop-filter:blur(20px);
+    border-top:1px solid var(--border);
+  }
+  .btn-primary {
+    width:100%; padding:16px;
+    background:var(--orange); color:white; border:none;
+    border-radius:12px; font-family:'DM Sans',sans-serif;
+    font-size:16px; font-weight:600; cursor:pointer;
+    transition:transform 0.15s, box-shadow 0.15s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(255,69,0,0.35); }
+  /* Results */
+  #results { margin-top:32px; }
+  #results h2 { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; margin-bottom:20px; }
+  .no-result {
+    text-align:center; padding:40px 20px;
+    color:var(--muted); font-size:15px;
+  }
+  .no-result .emoji { font-size:48px; display:block; margin-bottom:12px; }
+  /* Cards */
+  .r-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:20px; overflow:hidden; margin-bottom:16px;
+    display:flex; gap:0; flex-direction:column;
+    transition:transform 0.2s, box-shadow 0.2s;
+    opacity:0; animation:fadeUp 0.4s forwards;
+  }
+  @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+  .r-card { transform:translateY(20px); }
+  .r-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,0.5); }
+  .r-card img { width:100%; height:180px; object-fit:cover; }
+  .r-body { padding:16px; }
+  .r-body h3 { font-family:'Playfair Display',serif; font-size:18px; margin-bottom:6px; }
+  .r-meta { display:flex; flex-wrap:wrap; gap:12px; color:var(--muted); font-size:13px; margin-bottom:12px; }
+  .r-meta span { display:flex; align-items:center; gap:4px; }
+  .r-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .r-tag {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:100px; padding:3px 10px; font-size:11px; color:var(--muted);
+  }
+  .r-actions { display:flex; gap:8px; }
+  .btn-sm {
+    flex:1; padding:10px;
+    border-radius:10px; border:none;
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer; transition:transform 0.15s;
+  }
+  .btn-sm:hover { transform:scale(1.02); }
+  .btn-sm.primary { background:var(--orange); color:white; }
+  .btn-sm.ghost { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+  @media(min-width:540px){
+    .r-card { flex-direction:row; }
+    .r-card img { width:200px; height:auto; flex-shrink:0; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Food<span>gram</span></div>
+  <button class="back-btn" onclick="window.location.href='options.html'">← Back</button>
+</nav>
+
+<div class="pref-wrap">
+  <h1>What are you craving?</h1>
+  <p>Set your preferences and we'll find the perfect restaurants for you.</p>
+
+  <!-- Cuisine -->
+  <div class="pref-section">
+    <label>Cuisine Type</label>
+    <div class="chip-row" id="cuisineChips">
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🍛 North Indian</button>
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🐟 South Indian</button>
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🥘 Mughlai</button>
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🍜 Korean</button>
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🍕 Italian</button>
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🥡 Chinese</button>
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🌮 Mexican</button>
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🫕 Continental</button>
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🍣 Japanese</button>
+      <button class="chip" onclick="toggleChip(this,'cuisine')">🌯 Lebanese</button>
+    </div>
+  </div>
+
+  <!-- Mood -->
+  <div class="pref-section">
+    <label>Current Mood</label>
+    <div class="chip-row" id="moodChips">
+      <button class="chip" onclick="toggleChip(this,'mood')">🔥 Spicy</button>
+      <button class="chip" onclick="toggleChip(this,'mood')">🍯 Sweet</button>
+      <button class="chip" onclick="toggleChip(this,'mood')">🥗 Healthy</button>
+      <button class="chip" onclick="toggleChip(this,'mood')">🍗 Non-Veg</button>
+      <button class="chip" onclick="toggleChip(this,'mood')">🥦 Vegan</button>
+      <button class="chip" onclick="toggleChip(this,'mood')">🍷 Fine Dining</button>
+      <button class="chip" onclick="toggleChip(this,'mood')">⚡ Quick Bite</button>
+      <button class="chip" onclick="toggleChip(this,'mood')">☕ Café Vibes</button>
+    </div>
+  </div>
+
+  <!-- Budget -->
+  <div class="pref-section">
+    <label>Budget per person</label>
+    <div class="budget-display" id="budgetDisplay">₹300</div>
+    <div class="range-wrap">
+      <input type="range" id="budgetRange" min="100" max="2000" step="50" value="300"
+        oninput="updateBudget(this)">
+      <div class="range-labels"><span>₹100</span><span>₹2000+</span></div>
+    </div>
+  </div>
+
+  <!-- City -->
+  <div class="pref-section">
+    <label>City</label>
+    <div class="city-grid">
+      <div class="city-card active" onclick="selectCity(this,'Mumbai')"><span class="city-emoji">🌊</span><div class="city-name">Mumbai</div></div>
+      <div class="city-card" onclick="selectCity(this,'Delhi')"><span class="city-emoji">🏛</span><div class="city-name">Delhi</div></div>
+      <div class="city-card" onclick="selectCity(this,'Bangalore')"><span class="city-emoji">🌿</span><div class="city-name">Bangalore</div></div>
+      <div class="city-card" onclick="selectCity(this,'Hyderabad')"><span class="city-emoji">💎</span><div class="city-name">Hyderabad</div></div>
+      <div class="city-card" onclick="selectCity(this,'Kochi')"><span class="city-emoji">⛵</span><div class="city-name">Kochi</div></div>
+      <div class="city-card" onclick="selectCity(this,'Kolkata')"><span class="city-emoji">🎨</span><div class="city-name">Kolkata</div></div>
+      <div class="city-card" onclick="selectCity(this,'Chennai')"><span class="city-emoji">🌴</span><div class="city-name">Chennai</div></div>
+      <div class="city-card" onclick="selectCity(this,'Pune')"><span class="city-emoji">🏔</span><div class="city-name">Pune</div></div>
+    </div>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<div class="sticky-cta">
+  <button class="btn-primary" onclick="applyFilters()">🔍 Find Restaurants</button>
+</div>
+
+<script>
+const selectedCuisines = new Set();
+const selectedMoods = new Set();
+let budget = 300;
+let selectedCity = 'Mumbai';
+
+function toggleChip(btn, group) {
+  const set = group === 'cuisine' ? selectedCuisines : selectedMoods;
+  if (btn.classList.contains('active')) {
+    btn.classList.remove('active');
+    set.delete(btn.textContent.trim().replace(/^[^\s]+\s/,'').split(' ').join(' '));
+  } else {
+    btn.classList.add('active');
+    const label = btn.textContent.trim().replace(/^\S+\s/,'');
+    set.add(label);
+  }
+}
+
+function updateBudget(slider) {
+  budget = parseInt(slider.value);
+  const pct = ((budget - 100) / (2000 - 100)) * 100;
+  slider.style.setProperty('--fill', pct + '%');
+  document.getElementById('budgetDisplay').textContent = budget >= 2000 ? '₹2000+' : '₹' + budget;
+}
+
+function selectCity(el, city) {
+  document.querySelectorAll('.city-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedCity = city;
+}
+
+const restaurants = [
+  { name:"Shah Ghouse Café", cuisines:["Mughlai","North Indian"], moods:["Spicy","Non-Veg"], price:400, rating:4.9, reviews:2340, city:"Hyderabad", tags:["Biryani","Haleem","Iconic"], open:true, img:"https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&q=80" },
+  { name:"MTR – 1924", cuisines:["South Indian"], moods:["Healthy","Quick Bite"], price:200, rating:4.8, reviews:5100, city:"Bangalore", tags:["Breakfast","Idli","Dosa","Heritage"], open:true, img:"https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400&q=80" },
+  { name:"Bombay Canteen", cuisines:["Continental","North Indian"], moods:["Café Vibes","Non-Veg"], price:1200, rating:4.7, reviews:3200, city:"Mumbai", tags:["Craft Cocktails","Modern Indian","Trendy"], open:true, img:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80" },
+  { name:"Karim's", cuisines:["Mughlai"], moods:["Spicy","Non-Veg"], price:350, rating:4.7, reviews:8900, city:"Delhi", tags:["Kebabs","Mughal","Historic","Must Visit"], open:true, img:"https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=400&q=80" },
+  { name:"Saravana Bhavan", cuisines:["South Indian"], moods:["Healthy","Vegan"], price:180, rating:4.6, reviews:4500, city:"Chennai", tags:["Thali","Pure Veg","Budget","Family"], open:true, img:"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80" },
+  { name:"Peter Cat", cuisines:["Continental","Mughlai"], moods:["Fine Dining","Non-Veg"], price:900, rating:4.8, reviews:6700, city:"Kolkata", tags:["Chelo Kebab","Legendary","Date Night"], open:true, img:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80" },
+  { name:"Seoul Bites", cuisines:["Korean"], moods:["Spicy","Non-Veg","Café Vibes"], price:600, rating:4.8, reviews:980, city:"Bangalore", tags:["Ramen","Tteokbokki","KBBQ"], open:true, img:"https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=400&q=80" },
+  { name:"Arabian Sweets", cuisines:["Lebanese"], moods:["Sweet"], price:200, rating:4.7, reviews:1200, city:"Kochi", tags:["Kunafa","Baklava","Desserts"], open:true, img:"https://images.unsplash.com/photo-1681830667773-ee4d4e21bde4?w=400&q=80" },
+  { name:"Toit Brewpub", cuisines:["Continental","Italian"], moods:["Café Vibes","Non-Veg"], price:800, rating:4.6, reviews:4100, city:"Bangalore", tags:["Craft Beer","Pizza","Gastropub"], open:false, img:"https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80" },
+  { name:"Khyber Restaurant", cuisines:["North Indian","Mughlai"], moods:["Fine Dining","Non-Veg"], price:1800, rating:4.7, reviews:2800, city:"Mumbai", tags:["Heritage","Frontier Cuisine","Luxury"], open:true, img:"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80" },
+  { name:"Burma Burma", cuisines:["Chinese","Continental"], moods:["Healthy","Vegan","Café Vibes"], price:700, rating:4.5, reviews:2300, city:"Mumbai", tags:["Burmese","Vegan-Friendly","Unique"], open:true, img:"https://images.unsplash.com/photo-1555126634-323283e090fa?w=400&q=80" },
+  { name:"Burger Brotherhood", cuisines:["Continental"], moods:["Quick Bite","Non-Veg"], price:400, rating:4.6, reviews:1400, city:"Mumbai", tags:["Smash Burger","Craft","Loaded"], open:true, img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80" },
+  { name:"The Toddy Shop", cuisines:["South Indian"], moods:["Non-Veg","Spicy"], price:500, rating:4.8, reviews:3100, city:"Kochi", tags:["Seafood","Kerala","Coconut Curry"], open:true, img:"https://images.unsplash.com/photo-1585325701956-60dd9c8553bc?w=400&q=80" },
+  { name:"Zen Restaurant", cuisines:["Japanese"], moods:["Healthy","Fine Dining","Vegan"], price:1500, rating:4.5, reviews:890, city:"Delhi", tags:["Sushi","Ramen","Authentic"], open:true, img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400&q=80" },
+  { name:"Nizam's Kathi Roll", cuisines:["North Indian"], moods:["Quick Bite","Non-Veg","Spicy"], price:150, rating:4.5, reviews:7200, city:"Kolkata", tags:["Street Food","Roll","Iconic"], open:true, img:"https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400&q=80" },
+  { name:"Café Madras", cuisines:["South Indian"], moods:["Healthy","Quick Bite","Vegan"], price:120, rating:4.6, reviews:5400, city:"Mumbai", tags:["Filter Coffee","Idli","Old Mumbai"], open:true, img:"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80" },
+  { name:"Punjab Grill", cuisines:["North Indian"], moods:["Non-Veg","Spicy","Fine Dining"], price:1100, rating:4.4, reviews:1800, city:"Delhi", tags:["Dal Makhani","Tandoor","Punjabi","Luxury"], open:true, img:"https://images.unsplash.com/photo-1548943487-a2e4e43b4853?w=400&q=80" },
+  { name:"Cream Centre", cuisines:["Continental","Italian"], moods:["Healthy","Vegan","Sweet"], price:600, rating:4.3, reviews:3900, city:"Mumbai", tags:["Pure Veg","Pasta","Mexican","All-Day"], open:true, img:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80" },
+];
+
+function applyFilters() {
+  let filtered = [...restaurants];
+
+  // City filter
+  filtered = filtered.filter(r => r.city === selectedCity);
+
+  // Cuisine filter
+  if (selectedCuisines.size > 0) {
+    filtered = filtered.filter(r =>
+      r.cuisines.some(c => [...selectedCuisines].some(sc => c.toLowerCase().includes(sc.toLowerCase()) || sc.toLowerCase().includes(c.toLowerCase())))
+    );
+  }
+
+  // Mood filter
+  if (selectedMoods.size > 0) {
+    filtered = filtered.filter(r =>
+      r.moods.some(m => [...selectedMoods].some(sm => m.toLowerCase().includes(sm.toLowerCase()) || sm.toLowerCase().includes(m.toLowerCase())))
+    );
+  }
+
+  // Budget filter
+  filtered = filtered.filter(r => r.price <= budget);
+
+  // Sort by rating
+  filtered.sort((a, b) => b.rating - a.rating);
+
+  const resultsDiv = document.getElementById('results');
+
+  if (filtered.length === 0) {
+    resultsDiv.innerHTML = `
+      <div class="no-result">
+        <span class="emoji">🍽</span>
+        No restaurants found matching your preferences in ${selectedCity}.<br>Try adjusting your budget or city.
+      </div>`;
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
+  resultsDiv.innerHTML = `<h2>✨ ${filtered.length} restaurants found in ${selectedCity}</h2>` +
+    filtered.map((r, i) => `
+      <div class="r-card" style="animation-delay:${i*0.07}s">
+        <img src="${r.img}" alt="${r.name}" loading="lazy" onerror="this.style.display='none'">
+        <div class="r-body">
+          <h3>${r.name}</h3>
+          <div class="r-meta">
+            <span>⭐ ${r.rating} (${r.reviews.toLocaleString()} reviews)</span>
+            <span>💰 ₹${r.price}/person</span>
+            <span>${r.open ? '🟢 Open' : '🔴 Closed'}</span>
+          </div>
+          <div class="r-tags">${r.tags.map(t => `<span class="r-tag">${t}</span>`).join('')}</div>
+          <div class="r-actions">
+            <button class="btn-sm primary" onclick="quickBook('${r.name}')">🪑 Book Table</button>
+            <button class="btn-sm ghost" onclick="getDirections('${r.name}', '${r.city}')">🗺 Directions</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+  resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function quickBook(name) {
+  const date = prompt(`Book a table at ${name}\nEnter date (DD/MM/YYYY):`);
+  if (date) {
+    const time = prompt('Enter time (e.g. 7:30 PM):');
+    if (time) alert(`✅ Table booked at ${name} on ${date} at ${time}!`);
+  }
+}
+
+function getDirections(name, city) {
+  window.open(`https://www.google.com/maps/search/${encodeURIComponent(name + ' ' + city)}`, '_blank');
+}
+
+// Init range
+updateBudget(document.getElementById('budgetRange'));
+</script>
+</body>
+</html>

@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foodgram – Reels</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF4500;
+    --amber: #FFB347;
+    --dark: #0A0A0A;
+    --surface: #141414;
+    --surface2: #1E1E1E;
+    --text: #F5F0E8;
+    --muted: #888;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: black;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+  }
+  /* REELS */
+  #reelContainer {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .reel-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .reel-slide.active { opacity: 1; }
+  .reel-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.6);
+  }
+  /* Gradient overlay */
+  .reel-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.3) 0%,
+      transparent 30%,
+      transparent 50%,
+      rgba(0,0,0,0.8) 85%,
+      rgba(0,0,0,0.97) 100%
+    );
+  }
+  /* Top nav */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+  }
+  .logo-sm { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; color:white; }
+  .logo-sm span { color: var(--orange); }
+  .back-pill {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: white;
+    cursor: pointer;
+    border: none;
+  }
+  /* Progress dots */
+  .progress-dots {
+    position: absolute;
+    top: 60px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+  }
+  .dot {
+    width: 24px; height: 3px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .dot.active { background: white; }
+  /* Right actions */
+  .right-actions {
+    position: absolute;
+    right: 16px;
+    bottom: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    z-index: 10;
+  }
+  .action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: white;
+  }
+  .action-btn .icon-circle {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .action-btn:active .icon-circle { transform: scale(0.9); }
+  .action-btn .icon-circle.liked { background: rgba(255,69,0,0.5); }
+  .action-btn span { font-size: 11px; color: rgba(255,255,255,0.7); }
+  /* Bottom info */
+  .reel-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 0 20px 24px;
+    z-index: 10;
+  }
+  .dish-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,69,0,0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .reel-info h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 900;
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .reel-info .desc {
+    color: rgba(255,255,255,0.75);
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+  }
+  /* CTA */
+  .reel-cta {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-details {
+    flex: 1;
+    padding: 13px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .btn-details:hover { transform: scale(1.02); }
+  .btn-share {
+    width: 48px; height: 48px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items:center; justify-content:center;
+  }
+  /* Swipe hint */
+  .swipe-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.5;
+    pointer-events: none;
+    animation: fadeHint 3s forwards;
+    z-index: 5;
+  }
+  @keyframes fadeHint {
+    0% { opacity: 0.5; }
+    50% { opacity: 0.5; }
+    100% { opacity: 0; }
+  }
+  .swipe-hint .arrow { font-size: 32px; animation: bounce 0.8s infinite alternate; }
+  @keyframes bounce { to { transform: translateY(-8px); } }
+  .swipe-hint p { font-size: 14px; color: white; }
+
+  /* RESTAURANT DETAIL SHEET */
+  #detailSheet {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+  }
+  #detailSheet.open { display: block; }
+  .sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+  }
+  .sheet-content {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    max-height: 85vh;
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.1, 0.64, 1);
+    padding-bottom: 30px;
+  }
+  #detailSheet.open .sheet-content { transform: translateY(0); }
+  .sheet-handle {
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 16px auto 0;
+  }
+  .sheet-header-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    margin-top: 16px;
+  }
+  .sheet-body { padding: 20px; }
+  .sheet-body h2 { font-family:'Playfair Display',serif; font-size:24px; margin-bottom:4px; }
+  .sheet-restaurant {
+    color: var(--amber);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .sheet-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .sheet-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .info-box {
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .info-box .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+  .info-box .value { font-size: 16px; font-weight: 600; }
+  .option-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .opt-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .opt-btn.active { border-color: var(--orange); background: rgba(255,69,0,0.1); color: var(--orange); }
+  .date-time-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .date-time-row input {
+    flex: 1;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color-scheme: dark;
+  }
+  .date-time-row input:focus { outline: none; border-color: var(--orange); }
+  .btn-book {
+    width: 100%;
+    padding: 14px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s;
+    margin-bottom: 10px;
+  }
+  .btn-book:hover { transform: scale(1.01); }
+  .btn-maps {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex; align-items:center; justify-content:center; gap:6px;
+  }
+  /* Booking confirmed */
+  .confirm-toast {
+    position: fixed;
+    bottom: 90px; left:50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #22c55e;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 200;
+    white-space: nowrap;
+  }
+  .confirm-toast.show { transform: translateX(-50%) translateY(0); }
+  /* Navigation arrows */
+  .nav-arrows {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 10;
+  }
+  .nav-arrow {
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex; align-items:center; justify-content:center;
+    cursor: pointer;
+    font-size: 18px;
+    color: white;
+    transition: background 0.2s;
+  }
+  .nav-arrow:hover { background: rgba(255,69,0,0.5); }
+</style>
+</head>
+<body>
+
+<div id="reelContainer">
+  <!-- Slides rendered by JS -->
+</div>
+
+<!-- Detail Sheet -->
+<div id="detailSheet">
+  <div class="sheet-backdrop" onclick="closeSheet()"></div>
+  <div class="sheet-content">
+    <div class="sheet-handle"></div>
+    <img id="sheetImg" class="sheet-header-img" src="" alt="">
+    <div class="sheet-body">
+      <h2 id="sheetDish"></h2>
+      <div class="sheet-restaurant" id="sheetRest"></div>
+      <div class="sheet-tags" id="sheetTags"></div>
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="label">Rating</div>
+          <div class="value" id="sheetRating"></div>
+        </div>
+        <div class="info-box">
+          <div class="label">Avg Price</div>
+          <div class="value" id="sheetPrice"></div>
+        </div>
+        <div class="info-box">
+          <div class="label">Status</div>
+          <div class="value" id="sheetStatus"></div>
+        </div>
+        <div class="info-box">
+          <div class="label">Location</div>
+          <div class="value" id="sheetLoc"></div>
+        </div>
+      </div>
+      <div class="option-row">
+        <button class="opt-btn active" onclick="selectOpt(this)">🪑 Dine In</button>
+        <button class="opt-btn" onclick="selectOpt(this)">📦 Takeaway</button>
+        <button class="opt-btn" onclick="selectOpt(this)">🛵 Delivery</button>
+      </div>
+      <div class="date-time-row">
+        <input type="date" id="bookDate">
+        <input type="time" id="bookTime">
+      </div>
+      <button class="btn-book" onclick="bookTable()">🪑 Book Now</button>
+      <button class="btn-maps" id="mapsBtn" onclick="openMaps()">🗺 View on Google Maps</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-toast" id="confirmToast">✓ Booking Confirmed!</div>
+
+<script>
+const reels = [
+  {
+    dish: "Korean Buldak Ramen",
+    desc: "Nuclear fire noodles reinvented with desi spices. Addictive heat every single time.",
+    tag: "🔥 Trending #1",
+    restaurant: "Seoul Bites, Koramangala",
+    rating: "⭐ 4.8 / 5",
+    price: "₹350 / person",
+    status: "🟢 Open Now",
+    location: "Bangalore",
+    tags: ["Spicy", "Korean", "Noodles", "Vegetarian Option"],
+    mapsUrl: "https://www.google.com/maps/search/Seoul+Bites+Koramangala+Bangalore",
+    img: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=800&q=80",
+    likes: "24K"
+  },
+  {
+    dish: "Hyderabadi Dum Biryani",
+    desc: "Slow-cooked overnight, sealed with dough, opened at your table. Nothing beats this aroma.",
+    tag: "🏆 Local Legend",
+    restaurant: "Shah Ghouse, Hyderabad",
+    rating: "⭐ 4.9 / 5",
+    price: "₹280 / plate",
+    status: "🟢 Open Now",
+    location: "Hyderabad",
+    tags: ["Biryani", "Non-Veg", "Mughlai", "Award-Winning"],
+    mapsUrl: "https://www.google.com/maps/search/Shah+Ghouse+Hyderabad",
+    img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&q=80",
+    likes: "89K"
+  },
+  {
+    dish: "Kunafa Cheesecake",
+    desc: "Shredded phyllo pastry, mozzarella filling, rose-water syrup. Kerala's sweetest obsession.",
+    tag: "✨ Viral Dessert",
+    restaurant: "Arabian Sweets, Calicut",
+    rating: "⭐ 4.7 / 5",
+    price: "₹180 / piece",
+    status: "🟢 Open Now",
+    location: "Kozhikode",
+    tags: ["Dessert", "Middle Eastern", "Vegetarian", "Must Try"],
+    mapsUrl: "https://www.google.com/maps/search/Arabian+Sweets+Calicut",
+    img: "https://images.unsplash.com/photo-1681830667773-ee4d4e21bde4?w=800&q=80",
+    likes: "41K"
+  },
+  {
+    dish: "Mumbai Smash Burger",
+    desc: "Double-smashed patty, masala onions, secret sauce, brioche bun. Queues around the block.",
+    tag: "🔥 New in Town",
+    restaurant: "Burger Brotherhood, Bandra",
+    rating: "⭐ 4.6 / 5",
+    price: "₹320 / burger",
+    status: "🔴 Closed (Opens 12 PM)",
+    location: "Mumbai",
+    tags: ["Burgers", "Fast Food", "Egg Option", "American"],
+    mapsUrl: "https://www.google.com/maps/search/Burger+Brotherhood+Bandra+Mumbai",
+    img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
+    likes: "32K"
+  },
+  {
+    dish: "Kathi Roll",
+    desc: "Kolkata's greatest export. Flaky paratha, egg coating, double chicken, raw onion. Perfection.",
+    tag: "🌟 Street Classic",
+    restaurant: "Nizam's, Park Street",
+    rating: "⭐ 4.5 / 5",
+    price: "₹120 / roll",
+    status: "🟢 Open Now",
+    location: "Kolkata",
+    tags: ["Street Food", "Rolls", "Non-Veg", "Quick Bite"],
+    mapsUrl: "https://www.google.com/maps/search/Nizam's+Park+Street+Kolkata",
+    img: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80",
+    likes: "56K"
+  },
+  {
+    dish: "Butter Chicken Pizza",
+    desc: "Tandoori makhani base, paneer tikka, fresh coriander. Best of both worlds, no debate.",
+    tag: "🇮🇳 Desi Fusion",
+    restaurant: "Pizza Studio, Connaught Place",
+    rating: "⭐ 4.4 / 5",
+    price: "₹420 / pizza",
+    status: "🟢 Open Now",
+    location: "New Delhi",
+    tags: ["Pizza", "Fusion", "Vegetarian", "Family-Friendly"],
+    mapsUrl: "https://www.google.com/maps/search/Pizza+Studio+Connaught+Place+Delhi",
+    img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80",
+    likes: "18K"
+  },
+];
+
+let currentReel = 0;
+let currentReelData = null;
+
+function renderReels() {
+  const container = document.getElementById('reelContainer');
+  let html = '';
+
+  // Nav arrows
+  html += `<div class="nav-arrows">
+    <div class="nav-arrow" onclick="prevReel()">↑</div>
+    <div class="nav-arrow" onclick="nextReel()">↓</div>
+  </div>`;
+
+  // Top bar
+  html += `<div class="top-bar">
+    <div class="logo-sm">Food<span>gram</span></div>
+    <button class="back-pill" onclick="window.location.href='options.html'">← Back</button>
+  </div>`;
+
+  // Progress dots
+  html += `<div class="progress-dots">` + reels.map((_, i) => `<div class="dot ${i===0?'active':''}" id="dot${i}"></div>`).join('') + `</div>`;
+
+  // Swipe hint
+  html += `<div class="swipe-hint"><div class="arrow">↑</div><p>Swipe to explore</p></div>`;
+
+  // Slides
+  reels.forEach((r, i) => {
+    html += `<div class="reel-slide ${i===0?'active':''}" id="reel${i}">
+      <img class="reel-bg" src="${r.img}" alt="${r.dish}" loading="${i>0?'lazy':'eager'}">
+      <div class="reel-overlay"></div>
+      <div class="reel-info">
+        <div class="dish-tag">${r.tag}</div>
+        <h2>${r.dish}</h2>
+        <div class="desc">${r.desc}</div>
+        <div class="stats-row">
+          <div class="stat">⭐ ${r.rating.replace('⭐ ','')}</div>
+          <div class="stat">📍 ${r.location}</div>
+          <div class="stat">❤️ ${r.likes} likes</div>
+        </div>
+        <div class="reel-cta">
+          <button class="btn-details" onclick="openSheet(${i})">View Restaurant →</button>
+          <button class="btn-share" onclick="shareReel(${i})">↗</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // Right actions
+  html += `<div class="right-actions">
+    <div class="action-btn" onclick="likeReel(this)">
+      <div class="icon-circle" id="likeIcon">❤️</div>
+      <span id="likeCount">${reels[0].likes}</span>
+    </div>
+    <div class="action-btn" onclick="bookmarkReel(this)">
+      <div class="icon-circle">🔖</div>
+      <span>Save</span>
+    </div>
+    <div class="action-btn">
+      <div class="icon-circle">💬</div>
+      <span>Comment</span>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+function goToReel(index) {
+  document.getElementById('reel' + currentReel).classList.remove('active');
+  document.getElementById('dot' + currentReel).classList.remove('active');
+  currentReel = index;
+  document.getElementById('reel' + currentReel).classList.add('active');
+  document.getElementById('dot' + currentReel).classList.add('active');
+  document.getElementById('likeCount').textContent = reels[currentReel].likes;
+  document.getElementById('likeIcon').classList.remove('liked');
+}
+
+function nextReel() {
+  if (currentReel < reels.length - 1) goToReel(currentReel + 1);
+}
+function prevReel() {
+  if (currentReel > 0) goToReel(currentReel - 1);
+}
+
+// Touch swipe
+let touchStartY = 0;
+document.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, {passive:true});
+document.addEventListener('touchend', e => {
+  const delta = touchStartY - e.changedTouches[0].clientY;
+  if (Math.abs(delta) > 50) {
+    if (delta > 0) nextReel();
+    else prevReel();
+  }
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') prevReel();
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') nextReel();
+});
+
+function likeReel(el) {
+  const icon = document.getElementById('likeIcon');
+  icon.classList.toggle('liked');
+}
+function bookmarkReel(el) {
+  el.querySelector('.icon-circle').style.background = 'rgba(255,179,71,0.5)';
+}
+function shareReel(i) {
+  if(navigator.share) {
+    navigator.share({ title: reels[i].dish, text: reels[i].desc });
+  } else {
+    alert('Share: ' + reels[i].dish + ' at ' + reels[i].restaurant);
+  }
+}
+
+function openSheet(i) {
+  const r = reels[i];
+  currentReelData = r;
+  document.getElementById('sheetImg').src = r.img;
+  document.getElementById('sheetDish').textContent = r.dish;
+  document.getElementById('sheetRest').textContent = '📍 ' + r.restaurant;
+  document.getElementById('sheetRating').textContent = r.rating;
+  document.getElementById('sheetPrice').textContent = r.price;
+  document.getElementById('sheetStatus').innerHTML = r.status;
+  document.getElementById('sheetLoc').textContent = r.location;
+  document.getElementById('sheetTags').innerHTML = r.tags.map(t => `<span class="sheet-tag">${t}</span>`).join('');
+  document.getElementById('sheetImg').src = r.img;
+
+  // Set today's date as default
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('bookDate').value = today;
+
+  const sheet = document.getElementById('detailSheet');
+  sheet.style.display = 'block';
+  setTimeout(() => sheet.classList.add('open'), 10);
+}
+
+function closeSheet() {
+  const sheet = document.getElementById('detailSheet');
+  sheet.classList.remove('open');
+  setTimeout(() => { sheet.style.display = 'none'; }, 400);
+}
+
+function selectOpt(btn) {
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function bookTable() {
+  const date = document.getElementById('bookDate').value;
+  const time = document.getElementById('bookTime').value;
+  const opt = document.querySelector('.opt-btn.active')?.textContent || 'Dine In';
+  if (!date) { alert('Please select a date'); return; }
+  if (!time && opt.includes('Dine')) { alert('Please select a time'); return; }
+
+  closeSheet();
+  const toast = document.getElementById('confirmToast');
+  toast.textContent = `✓ ${opt.trim()} booked at ${currentReelData?.restaurant?.split(',')[0]}!`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function openMaps() {
+  if (currentReelData?.mapsUrl) window.open(currentReelData.mapsUrl, '_blank');
+}
+
+renderReels();
+</script>
+</body>
+</html>

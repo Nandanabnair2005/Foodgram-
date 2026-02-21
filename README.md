@@ -71,11 +71,35 @@ Browser-based Icons & Emojis]
 ## Features
 
 List the key features of your project:
-- Feature 1: [Description]
-- Feature 2: [Description]
-- Feature 3: [Description]
-- Feature 4: [Description]
+User Login System
+Secure and visually appealing login interface for user access.
 
+Personalized Food Preferences
+Users can select cuisine type, food mood, budget, and city to get customized recommendations.
+
+Trending Food Section
+Displays food items that are currently popular and trending on social media.
+
+Food Reels Experience
+Short, engaging food reels similar to social media platforms for quick inspiration.
+
+Restaurant Discovery
+Helps users find restaurants based on location, rating, price, and cuisine.
+
+Search & Filter Options
+Allows users to search restaurants and filter them by rating, budget, and availability.
+
+Interactive UI Design
+Modern, responsive, and user-friendly interface with smooth animations.
+
+Booking & Details View
+Users can view restaurant details and simulate table booking options.
+
+City-Based Recommendations
+Restaurants and food trends are displayed based on the selected city.
+
+Fast & Lightweight Performance
+Built using vanilla HTML, CSS, and JavaScript for quick loading and smooth operation.
 ---
 
 ## Implementation

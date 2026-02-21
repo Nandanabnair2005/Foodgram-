@@ -62,9 +62,9 @@ Browser-based Icons & Emojis]
 - Tools used: [ VS Code, Git,web browser]
 
 **For Hardware:**
-- Main components: [List main components]
-- Specifications: [Technical specifications]
-- Tools required: [List tools needed]
+- Main components:[No]
+- Specifications: [No]
+- Tools required: [No]
 
 ---
 
@@ -108,14 +108,18 @@ List the key features of your project:
 
 #### Screenshots (Add at least 3)
 
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+![<img width="1897" height="867" alt="login page" src="https://github.com/user-attachments/assets/139ea90f-dd3a-4b15-a134-ed3bb5f9fdc3" />
+](Add screenshot 1 here with proper name)
+*it is the login page of our app *
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
+![![home page](https://github.com/user-attachments/assets/b5778249-7972-483f-9267-518ac7cea932)
 
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+](Add screenshot 2 here with proper name)
+*home page of our app it shows treading foods and local food spots*
+
+![![choosing preference](https://github.com/user-attachments/assets/3ca40850-8372-4ba5-8899-94c956c0bbd2)
+](Add screenshot 3 here with proper name)
+*this page ask for our preference to like watch reels and order food or directly go through restuarants*
 
 #### Diagrams
 
@@ -204,7 +208,8 @@ List the key features of your project:
 
 #### App Flow Diagram
 
-![App Flow](docs/app-flow.png)
+![App Flow](![WhatsApp Image 2026-02-21 at 9 58 08 AM](https://github.com/user-attachments/assets/45f0185c-c2ea-4cb2-bc74-832dfa55d507)
+)
 *Explain the user flow through your application*
 
 #### Installation Guide
@@ -425,9 +430,9 @@ If you used AI tools during development, document them here for transparency:
 
 ## Team Contributions
 
-- [Name 1]: [Specific contributions - e.g., Frontend development, API integration, etc.]
-- [Name 2]: [Specific contributions - e.g., Backend development, Database design, etc.]
-- [Name 3]: [Specific contributions - e.g., UI/UX design, Testing, Documentation, etc.]
+- Anugraha S C: [Specific contributions -  Frontend development,Backend development]
+  
+- Nandana B Nair: [Specific contributions -  UI/UX design]
 
 ---
 
